@@ -17,7 +17,12 @@ class ModelBase(type):
 
 
 class Field:
+    """Класс поля:
+        class Organisation(Model):
+            field_name = Field(**kwargs)
+    """
     def __init__(self, verbose_name: str):
+        """verbose_name: Название колонки в таблице ms access"""
         self.verbose_name = verbose_name
 
     def __str__(self):
@@ -61,15 +66,18 @@ class DefaultField(Field):
 
 
 class ManualField(Field):
+    """
+    Поле которое в postgresql связано через ForeignKey, но в ms access является строкой
+    """
     def __init__(self, verbose_name: str, table_name_in_postgre_db: str, fields_to_look_up: list, parse: bool = False,
                  position: int = None, delimiter: str = ' '):
         """
-        verbose_name: название колонки в аксес
-        table_name_in_postgre_db: название таблицы в постгре
-        fields_to_look_up: список полей по которым нужно проводить поиск в постгре
-        parse: True/False Нужно ли парсить поле из аксеса
+        verbose_name: название колонки в ms access
+        table_name_in_postgre_db: название таблицы в postgresql
+        fields_to_look_up: список полей по которым нужно проводить поиск в postgresql
+        parse: True/False Нужно ли парсить поле из ms access
         position: Если parse=True. Число, показывающее какой порядковый в списке распаршенных данных брать для поиска (начинается с 1)
-        delimiter: Символ по которому парсить поле из аксеса
+        delimiter: Символ по которому парсить поле из ms access
         """
         if parse != bool(position):
             raise AttributeError('"parse" и "position" дожны быть заданы вместе, %s' % verbose_name)
@@ -81,6 +89,7 @@ class ManualField(Field):
         self.delimiter = delimiter
 
     def find_manual_in_postgre_db(self, value, cursor=None):
+        """Построение и выполнение запроса в postgresql для поиска id в справочнике"""
         if not value:
             self.value = 'null'
             return self
@@ -108,8 +117,21 @@ class ManualField(Field):
 
 
 class Model(metaclass=ModelBase):
+    """
+    Базовый класс модели для миграции данных из ms access в postgresql
+
+    class Organisation(Model):
+        атрибуты(экземпляры классов Field):
+            reporting_period = base_models.IntegerField(verbose_name='год')
+            название колонки в postgresql = ...Field(**kwargs)
+
+        access_db_table = Название таблицы в ms access
+        postgre_db_table = Название таблицы в postgresql
+
+    """
     @classmethod
     def manage_fields(cls, values, cursor=None):
+        """Присвоение значений полученных из ms access"""
         errors = ManualMigrationError(values)
         fields = list(cls.fields.values())
         for i in range(len(values)):
@@ -125,6 +147,7 @@ class Model(metaclass=ModelBase):
 
     @classmethod
     def get_query_to_access(cls):
+        """Построение запроса в ms access"""
         fields = cls.fields
         string = """SELECT"""
         for field_alter_name, field in fields.items():
@@ -136,6 +159,7 @@ class Model(metaclass=ModelBase):
 
     @classmethod
     def get_query_to_postgre(cls):
+        """Построение запроса в postgresql"""
         fields = cls.fields
         first_part_query = f'INSERT INTO {cls.postgre_db_table} ('
         second_part_query = ' VALUES ('

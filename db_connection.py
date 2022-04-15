@@ -3,6 +3,7 @@ import pyodbc
 
 
 class DatabasesConnection:
+    """Контекстный менеджер для соединения с одновременным соединением к ms access и postgresql"""
     def __init__(self, postgre_data, access_data):
         self._postgre_data = postgre_data
         self._access_data = access_data

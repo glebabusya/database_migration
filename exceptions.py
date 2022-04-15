@@ -2,7 +2,7 @@ import logging
 
 
 class ManualError(Exception):
-    """Исключение вызывается когда не найдена запись справочника в БД АИС СОЗ"""
+    """Исключение вызывается когда не найдена запись справочника в postgresql"""
 
     def __init__(self, table_name: str):
         self.table_name = table_name
@@ -22,7 +22,7 @@ class CustomSingleTon:
 
 
 class ManualMigrationError(CustomSingleTon):
-
+    """Класс для отображения ненайденных записей в справочниках postgresql"""
     def __init__(self, values):
         self.values = values
         self.errors = {}
