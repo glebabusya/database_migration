@@ -3,6 +3,8 @@ from . import logging
 POSTGRESQL = {
     "database": "minpriroda",
     "user": "minpriroda",
+    # "password": "password",
+    # "host": "host",
 
 }
 
